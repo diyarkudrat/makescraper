@@ -25,10 +25,12 @@ func main() {
 
 	// On every a element which has href attribute call callback
 	c.OnHTML("#Wall > div > div.results__body > div > main > section > div", func(e *colly.HTMLElement) {
-		item := shoeData{}
-		item.Name = e.ChildText(".product-card__info .product-card__title")
-		item.Price = e.ChildText(".product-card__info .product-card__price")
-		shoes = append(shoes, item)
+		e.ForEach(".product-card", func(_ int, e *colly.HTMLElement) {
+			item := shoeData{}
+			item.Name = e.ChildText(".product-card__info .product-card__title")
+			item.Price = e.ChildText(".product-card__info .product-card__price")
+			shoes = append(shoes, item)
+		})
 	})
 
 	// Before making a request print "Visiting ..."
