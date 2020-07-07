@@ -2,59 +2,41 @@ package main
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/gocolly/colly"
 )
 
-// main() contains code adapted from example found in Colly's docs:
-// http://go-colly.org/docs/examples/basic/
+type shoeData struct {
+	Name  string
+	Price string
+}
+
+func printShoes(n []shoeData) {
+	fmt.Println("\n-- Nike Mens Running Shoes --")
+	for _, item := range n {
+		fmt.Printf("Name: %v\nPrice: %v\n\n", item.Name, item.Price)
+	}
+}
+
 func main() {
-	// Instantiate default collector
+	shoes := []shoeData{}
+
 	c := colly.NewCollector()
 
-	// // On every a element which has href attribute call callback
-	// c.OnHTML("a[href]", func(e *colly.HTMLElement) {
-	//             link := e.Attr("href")
+	// On every a element which has href attribute call callback
+	c.OnHTML("#Wall > div > div.results__body > div > main > section > div", func(e *colly.HTMLElement) {
+		item := shoeData{}
+		item.Name = e.ChildText(".product-card__info .product-card__title")
+		item.Price = e.ChildText(".product-card__info .product-card__price")
+		shoes = append(shoes, item)
+	})
 
-	// 	// Print link
-	//             fmt.Printf("Link found: %q -> %s\n", e.Text, link)
-	// })
-
-	// // Before making a request print "Visiting ..."
-	// c.OnRequest(func(r *colly.Request) {
-	// 	fmt.Println("Visiting", r.URL.String())
-	// })
-
-	// // Start scraping on https://hackerspaces.org
-
+	// Before making a request print "Visiting ..."
 	c.OnRequest(func(r *colly.Request) {
-		fmt.Println("Visiting", r.URL)
+		fmt.Printf("Visiting: %v\n", r.URL.String())
 	})
 
-	c.OnError(func(_ *colly.Response, err error) {
-		log.Println("Something went wrong:", err)
-	})
+	c.Visit("https://www.nike.com/w/mens-shoes-nik1zy7ok")
+	printShoes(shoes)
 
-	c.OnResponse(func(r *colly.Response) {
-		fmt.Println("Visited", r.Request.URL)
-	})
-
-	c.OnHTML("a[href]", func(e *colly.HTMLElement) {
-		e.Request.Visit(e.Attr("href"))
-	})
-
-	c.OnHTML("tr td:nth-of-type(1)", func(e *colly.HTMLElement) {
-		fmt.Println("First column of a table row:", e.Text)
-	})
-
-	c.OnXML("//h1", func(e *colly.XMLElement) {
-		fmt.Println(e.Text)
-	})
-
-	c.OnScraped(func(r *colly.Response) {
-		fmt.Println("Finished", r.Request.URL)
-	})
-
-	c.Visit("https://hackerspaces.org/")
 }
