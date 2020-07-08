@@ -1,7 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
 
 	"github.com/gocolly/colly"
 )
@@ -16,6 +19,20 @@ func printShoes(n []shoeData) {
 	for _, item := range n {
 		fmt.Printf("Name: %v\nPrice: %v\n\n", item.Name, item.Price)
 	}
+}
+
+func writeFile(file []byte) {
+	if err := ioutil.WriteFile("output.json", file, 0644); err != nil {
+		log.Fatalf("Unable to write file! %v", err)
+	}
+}
+
+func serializeToJSON(n []shoeData) {
+	fmt.Println("Serializing shoe data to JSON...")
+
+	serialized, _ := json.Marshal(n)
+	writeFile(serialized)
+	fmt.Println(string(serialized))
 }
 
 func main() {
@@ -40,5 +57,6 @@ func main() {
 
 	c.Visit("https://www.nike.com/w/mens-shoes-nik1zy7ok")
 	printShoes(shoes)
+	serializeToJSON(shoes)
 
 }
